@@ -1,0 +1,517 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS CloudFormation sample template LAMP_Single_Instance: Create a LAMP stack using a single EC2 instance and a local MySQL database for storage. This template demonstrates using the AWS CloudFormation bootstrap scripts to install the packages and files necessary to deploy the Apache web server, PHP, and MySQL at instance launch time. **WARNING** This template creates an Amazon EC2 instance. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Parameters": {
+        "KeyName": {
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "ConstraintDescription": "Can contain only ASCII characters."
+        },
+        "InstanceCount": {
+            "Description": "Number of instances to deploy",
+            "Type": "Number",
+            "ConstraintDescription": "Integers only"
+        },
+        "InstanceType": {
+            "Description": "WebServer EC2 instance type",
+            "Type": "String",
+            "Default": "t2.medium",
+            "AllowedValues": [
+                "t1.micro",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.medium",
+                "m3.large",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
+                "g2.2xlarge",
+                "r3.large",
+                "r3.xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge",
+                "i2.xlarge",
+                "i2.2xlarge",
+                "i2.4xlarge",
+                "i2.8xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge",
+                "cr1.8xlarge",
+                "cc2.8xlarge",
+                "cg1.4xlarge"
+            ],
+            "ConstraintDescription": "Must be a valid EC2 instance type"
+        },
+        "SSHLocation": {
+            "Description": "The IP address range that can be used to SSH to the EC2 instances",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x"
+        }
+    },
+    "Mappings": {
+        "AWSInstanceType2Arch": {
+            "t1.micro": {
+                "Arch": "64"
+            },
+            "t2.micro": {
+                "Arch": "64"
+            },
+            "t2.small": {
+                "Arch": "64"
+            },
+            "t2.medium": {
+                "Arch": "64"
+            },
+            "m1.small": {
+                "Arch": "64"
+            },
+            "m1.medium": {
+                "Arch": "64"
+            },
+            "m1.large": {
+                "Arch": "64"
+            },
+            "m1.xlarge": {
+                "Arch": "64"
+            },
+            "m2.xlarge": {
+                "Arch": "64"
+            },
+            "m2.2xlarge": {
+                "Arch": "64"
+            },
+            "m2.4xlarge": {
+                "Arch": "64"
+            },
+            "m3.medium": {
+                "Arch": "64"
+            },
+            "m3.large": {
+                "Arch": "64"
+            },
+            "m3.xlarge": {
+                "Arch": "64"
+            },
+            "m3.2xlarge": {
+                "Arch": "64"
+            },
+            "c1.medium": {
+                "Arch": "64"
+            },
+            "c1.xlarge": {
+                "Arch": "64"
+            },
+            "c3.large": {
+                "Arch": "64"
+            },
+            "c3.xlarge": {
+                "Arch": "64"
+            },
+            "c3.2xlarge": {
+                "Arch": "64"
+            },
+            "c3.4xlarge": {
+                "Arch": "64"
+            },
+            "c3.8xlarge": {
+                "Arch": "64"
+            },
+            "g2.2xlarge": {
+                "Arch": "64"
+            },
+            "r3.large": {
+                "Arch": "64"
+            },
+            "r3.xlarge": {
+                "Arch": "64"
+            },
+            "r3.2xlarge": {
+                "Arch": "64"
+            },
+            "r3.4xlarge": {
+                "Arch": "64"
+            },
+            "r3.8xlarge": {
+                "Arch": "64"
+            },
+            "i2.xlarge": {
+                "Arch": "64"
+            },
+            "i2.2xlarge": {
+                "Arch": "64"
+            },
+            "i2.4xlarge": {
+                "Arch": "64"
+            },
+            "i2.8xlarge": {
+                "Arch": "64"
+            },
+            "hi1.4xlarge": {
+                "Arch": "64"
+            },
+            "hs1.8xlarge": {
+                "Arch": "64"
+            },
+            "cr1.8xlarge": {
+                "Arch": "64"
+            },
+            "cc2.8xlarge": {
+                "Arch": "64"
+            }
+        },
+        "AWSRegionArch2AMI": {
+            "ap-northeast-1": {
+                "64": "ami-f1465396"
+            },
+            "ap-northeast-2": {
+                "64": "ami-12d10e7c"
+            },
+            "ap-south-1": {
+                "64": "ami-06e69969"
+            },
+            "ap-southeast-1": {
+                "64": "ami-8377fae0"
+            },
+            "ap-southeast-2": {
+                "64": "ami-ec74648f"
+            },
+            "ca-central-1": {
+                "64": "ami-96d867f2"
+            },
+            "eu-central-1": {
+                "64": "ami-7f42e510"
+            },
+            "eu-west-1": {
+                "64": "ami-af455dc9"
+            },
+            "eu-west-2": {
+                "64": "ami-167f6972"
+            },
+            "sa-east-1": {
+                "64": "ami-eda2c981"
+            },
+            "us-east-1": {
+                "64": "ami-a60c23b0"
+            },
+            "us-east-2": {
+                "64": "ami-ae90b6cb"
+            },
+            "us-west-1": {
+                "64": "ami-96f1dcf6"
+            },
+            "us-west-2": {
+                "64": "ami-7646530f"
+            }
+
+        }
+    },
+    "Resources": {
+        "WebServerSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Enable Geth RPC Port",
+                "SecurityGroupIngress": [{
+                    "IpProtocol": "tcp",
+                    "FromPort": "8545",
+                    "ToPort": "8545",
+                    "CidrIp": "0.0.0.0/0"
+                }, {
+                    "IpProtocol": "tcp",
+                    "FromPort": "22",
+                    "ToPort": "22",
+                    "CidrIp": {
+                        "Ref": "SSHLocation"
+                    }
+                }]
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                }
+            }
+        },
+        "LoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+            "Properties": {
+                "AvailabilityZones": { "Fn::GetAZs": "" },
+                "Listeners": [{
+                    "LoadBalancerPort": "80",
+                    "InstancePort": "8545",
+                    "Protocol": "HTTP"
+                }],
+                "HealthCheck": {
+                    "Target": "TCP:8545",
+                    "HealthyThreshold": "3",
+                    "UnhealthyThreshold": "5",
+                    "Interval": "30",
+                    "Timeout": "5"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "4369026b-a90f-474b-8fcd-b636341ea415"
+                }
+            }
+        },
+        "EC2Group": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "AvailabilityZones": { "Fn::GetAZs": "" },
+                "MinSize": {
+                    "Ref": "InstanceCount"
+                },
+                "MaxSize": {
+                    "Ref": "InstanceCount"
+                },
+                "LoadBalancerNames": [{
+                    "Ref": "LoadBalancer"
+                }],
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfiguration"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "d509e6f2-dd24-460d-8532-e98791c13777"
+                }
+            }
+        },
+        "LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSRegionArch2AMI", {
+                            "Ref": "AWS::Region"
+                        }, {
+                            "Fn::FindInMap": [
+                                "AWSInstanceType2Arch", {
+                                    "Ref": "InstanceType"
+                                },
+                                "Arch"
+                            ]
+                        }
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "BlockDeviceMappings": [{
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "VolumeSize": "80"
+                    }
+                }],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "WebServerSecurityGroup"
+                }]
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "URL": {
+            "Description": "The URL of the node",
+            "Value": {
+                "Fn::Join": [
+                    "", [
+                        "http://", {
+                            "Fn::GetAtt": [
+                                "LoadBalancer",
+                                "DNSName"
+                            ]
+                        }
+                    ]
+                ]
+            }
+        }
+    },
+    "Metadata": {
+        "AWS::CloudFormation::Designer": {
+            "54b037ce-872c-458e-8876-ff95f9b58d1d": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 310,
+                    "y": 90
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "4369026b-a90f-474b-8fcd-b636341ea415": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": -60,
+                    "y": 190
+                },
+                "z": 0,
+                "embeds": []
+            },
+            "61a1944b-eace-47f8-9013-5f5b033b5d22": {
+                "source": {
+                    "id": "4369026b-a90f-474b-8fcd-b636341ea415"
+                },
+                "target": {
+                    "id": "64341821-8e1c-40bb-a740-072885af036d"
+                },
+                "z": 11
+            },
+            "bcd0cabd-422c-441d-981c-a47e4cb1320e": {
+                "source": {
+                    "id": "4369026b-a90f-474b-8fcd-b636341ea415"
+                },
+                "target": {
+                    "id": "eba4a194-0d7c-433b-a0f3-633c3493e0ee"
+                },
+                "z": 2
+            },
+            "d509e6f2-dd24-460d-8532-e98791c13777": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 50,
+                    "y": 190
+                },
+                "z": 0,
+                "embeds": [],
+                "isconnectedto": [
+                    "4369026b-a90f-474b-8fcd-b636341ea415"
+                ],
+                "isassociatedwith": [
+                    "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
+                ]
+            },
+            "f67d95d9-f8db-4fda-8aa2-f8297eb6df19": {
+                "source": {
+                    "id": "d509e6f2-dd24-460d-8532-e98791c13777"
+                },
+                "target": {
+                    "id": "4369026b-a90f-474b-8fcd-b636341ea415"
+                },
+                "z": 2
+            },
+            "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 180,
+                    "y": 90
+                },
+                "z": 0,
+                "embeds": [],
+                "ismemberof": [
+                    "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                ],
+                "isrelatedto": [
+                    "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                ]
+            },
+            "a86304ab-6581-43c2-b136-0fe39691ac2f": {
+                "source": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
+                },
+                "target": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                },
+                "z": 11
+            },
+            "419842f1-8718-4193-95a3-483a6213d851": {
+                "source": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
+                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
+                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
+                },
+                "target": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                },
+                "z": 12
+            },
+            "070987a8-4476-46f5-be19-3fd46e0f192d": {
+                "source": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
+                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
+                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
+                },
+                "target": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                },
+                "z": 12
+            },
+            "b9bb5ecc-90ff-47c4-a5d9-96e57b8258e8": {
+                "source": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
+                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
+                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
+                },
+                "target": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                },
+                "z": 12
+            },
+            "776ee65f-2dc5-454d-bff8-a951840cadbb": {
+                "source": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
+                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
+                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
+                },
+                "target": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                },
+                "z": 12
+            },
+            "03b12204-0f4e-4382-948e-cca534cbc34f": {
+                "source": {
+                    "id": "64341821-8e1c-40bb-a740-072885af036d"
+                },
+                "target": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                },
+                "z": 11
+            },
+            "8d10144b-45f8-4ad4-855d-199285a1c20a": {
+                "source": {
+                    "id": "d509e6f2-dd24-460d-8532-e98791c13777"
+                },
+                "target": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
+                },
+                "z": 11
+            }
+        }
+    }
+}
