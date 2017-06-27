@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS CloudFormation sample template LAMP_Single_Instance: Create a LAMP stack using a single EC2 instance and a local MySQL database for storage. This template demonstrates using the AWS CloudFormation bootstrap scripts to install the packages and files necessary to deploy the Apache web server, PHP, and MySQL at instance launch time. **WARNING** This template creates an Amazon EC2 instance. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Description": "AWS CloudFormation template for ethereum node deployment",
     "Parameters": {
         "KeyName": {
             "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
@@ -11,6 +11,21 @@
             "Description": "Number of instances to deploy",
             "Type": "Number",
             "ConstraintDescription": "Integers only"
+        },
+        "ETHStatsServer": {
+            "Description": "Ethstats server",
+            "Type": "String",
+            "Default": "t2.micro",
+            "AllowedValues": [
+                "t1.micro",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "m1.small",
+                "m1.medium",
+                "m1.large"
+            ],
+            "ConstraintDescription": "Must be a valid EC2 instance type"
         },
         "InstanceType": {
             "Description": "WebServer EC2 instance type",
@@ -221,11 +236,10 @@
             "us-west-2": {
                 "64": "ami-7646530f"
             }
-
         }
     },
     "Resources": {
-        "WebServerSecurityGroup": {
+        "ETHRPCSecurity": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "GroupDescription": "Enable Geth RPC Port",
@@ -252,7 +266,9 @@
         "LoadBalancer": {
             "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
             "Properties": {
-                "AvailabilityZones": { "Fn::GetAZs": "" },
+                "AvailabilityZones": {
+                    "Fn::GetAZs": ""
+                },
                 "Listeners": [{
                     "LoadBalancerPort": "80",
                     "InstancePort": "8545",
@@ -275,7 +291,9 @@
         "EC2Group": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
-                "AvailabilityZones": { "Fn::GetAZs": "" },
+                "AvailabilityZones": {
+                    "Fn::GetAZs": ""
+                },
                 "MinSize": {
                     "Ref": "InstanceCount"
                 },
@@ -293,7 +311,10 @@
                 "AWS::CloudFormation::Designer": {
                     "id": "d509e6f2-dd24-460d-8532-e98791c13777"
                 }
-            }
+            },
+            "DependsOn": [
+                "EthstatsInstance"
+            ]
         },
         "LaunchConfiguration": {
             "Type": "AWS::AutoScaling::LaunchConfiguration",
@@ -325,12 +346,89 @@
                     "Ref": "KeyName"
                 },
                 "SecurityGroups": [{
-                    "Ref": "WebServerSecurityGroup"
-                }]
+                    "Ref": "ETHRPCSecurity"
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "ETHStatsServer"
+                }],
+                "UserData": {
+                    "Fn::Base64": "#include https://get.docker.io"
+                }
             },
             "Metadata": {
                 "AWS::CloudFormation::Designer": {
                     "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
+                }
+            }
+        },
+        "EthstatsInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSRegionArch2AMI", {
+                            "Ref": "AWS::Region"
+                        }, {
+                            "Fn::FindInMap": [
+                                "AWSInstanceType2Arch", {
+                                    "Ref": "InstanceType"
+                                },
+                                "Arch"
+                            ]
+                        }
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "ETHStatsServer"
+                },
+                "BlockDeviceMappings": [{
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "VolumeSize": "15"
+                    }
+                }],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "ETHStatsServer"
+                }],
+                "SecurityGroups": [{
+                    "Ref": "ETHStatsSecurity"
+                }],
+                "UserData": {
+                    "Fn::Base64": "#include https://get.docker.io"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "65efe09a-0f3e-48c2-a30a-84d0c993d132"
+                }
+            }
+        },
+        "ETHStatsSecurity": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Enable Geth RPC Port",
+                "SecurityGroupIngress": [{
+                    "IpProtocol": "tcp",
+                    "FromPort": "3000",
+                    "ToPort": "3000",
+                    "CidrIp": "0.0.0.0/0"
+                }, {
+                    "IpProtocol": "tcp",
+                    "FromPort": "22",
+                    "ToPort": "22",
+                    "CidrIp": {
+                        "Ref": "SSHLocation"
+                    }
+                }]
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "fe827154-fdc1-463d-9b70-44c556d2c5ee"
                 }
             }
         }
@@ -350,6 +448,21 @@
                     ]
                 ]
             }
+        },
+        "ETHStatsIP": {
+            "Description": "IP address of the ethstats server",
+            "Value": {
+                "Fn::Join": [
+                    "", [
+                        "http://", {
+                            "Fn::GetAtt": [
+                                "EthstatsInstance",
+                                "PublicIp"
+                            ]
+                        }
+                    ]
+                ]
+            }
         }
     },
     "Metadata": {
@@ -360,8 +473,8 @@
                     "height": 60
                 },
                 "position": {
-                    "x": 310,
-                    "y": 90
+                    "x": 150,
+                    "y": 300
                 },
                 "z": 1,
                 "embeds": []
@@ -412,6 +525,9 @@
                 ],
                 "isassociatedwith": [
                     "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
+                ],
+                "dependson": [
+                    "65efe09a-0f3e-48c2-a30a-84d0c993d132"
                 ]
             },
             "f67d95d9-f8db-4fda-8aa2-f8297eb6df19": {
@@ -429,8 +545,8 @@
                     "height": 60
                 },
                 "position": {
-                    "x": 180,
-                    "y": 90
+                    "x": 50,
+                    "y": 300
                 },
                 "z": 0,
                 "embeds": [],
@@ -509,6 +625,73 @@
                 },
                 "target": {
                     "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
+                },
+                "z": 11
+            },
+            "65efe09a-0f3e-48c2-a30a-84d0c993d132": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 50,
+                    "y": 50
+                },
+                "z": 0,
+                "embeds": [],
+                "ismemberof": [
+                    "fe827154-fdc1-463d-9b70-44c556d2c5ee"
+                ]
+            },
+            "fe827154-fdc1-463d-9b70-44c556d2c5ee": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 150,
+                    "y": 50
+                },
+                "z": 0,
+                "embeds": []
+            },
+            "74cce04d-af0b-4bbd-a163-97f814946dc4": {
+                "source": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
+                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
+                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
+                },
+                "target": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                },
+                "z": 12
+            },
+            "92ecadb6-800b-409d-a15c-fbef2dc6f08e": {
+                "source": {
+                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
+                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
+                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
+                },
+                "target": {
+                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                },
+                "z": 12
+            },
+            "6197f869-42c0-4e45-9a0e-bc15957974ca": {
+                "source": {
+                    "id": "65efe09a-0f3e-48c2-a30a-84d0c993d132"
+                },
+                "target": {
+                    "id": "fe827154-fdc1-463d-9b70-44c556d2c5ee"
+                },
+                "z": 11
+            },
+            "eb72aedf-1eea-4818-bf49-304bdbe6dd7b": {
+                "source": {
+                    "id": "d509e6f2-dd24-460d-8532-e98791c13777"
+                },
+                "target": {
+                    "id": "65efe09a-0f3e-48c2-a30a-84d0c993d132"
                 },
                 "z": 11
             }
