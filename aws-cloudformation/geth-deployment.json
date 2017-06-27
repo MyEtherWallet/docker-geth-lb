@@ -27,6 +27,11 @@
             ],
             "ConstraintDescription": "Must be a valid EC2 instance type"
         },
+        "ETHStatsPassword": {
+            "Description": "Password to connect to ethstats server",
+            "Type": "String",
+            "ConstraintDescription": "String only"
+        },
         "InstanceType": {
             "Description": "WebServer EC2 instance type",
             "Type": "String",
@@ -195,46 +200,46 @@
         },
         "AWSRegionArch2AMI": {
             "ap-northeast-1": {
-                "64": "ami-f1465396"
+                "64": "ami-785c491f"
             },
             "ap-northeast-2": {
-                "64": "ami-12d10e7c"
+                "64": "ami-94d20dfa"
             },
             "ap-south-1": {
-                "64": "ami-06e69969"
+                "64": "ami-49e59a26"
             },
             "ap-southeast-1": {
-                "64": "ami-8377fae0"
+                "64": "ami-2378f540"
             },
             "ap-southeast-2": {
-                "64": "ami-ec74648f"
+                "64": "ami-e94e5e8a"
             },
             "ca-central-1": {
-                "64": "ami-96d867f2"
+                "64": "ami-7ed56a1a"
             },
             "eu-central-1": {
-                "64": "ami-7f42e510"
+                "64": "ami-1c45e273"
             },
             "eu-west-1": {
-                "64": "ami-af455dc9"
+                "64": "ami-6d48500b"
             },
             "eu-west-2": {
-                "64": "ami-167f6972"
+                "64": "ami-cc7066a8"
             },
             "sa-east-1": {
-                "64": "ami-eda2c981"
+                "64": "ami-34afc458"
             },
             "us-east-1": {
-                "64": "ami-a60c23b0"
+                "64": "ami-d15a75c7"
             },
             "us-east-2": {
-                "64": "ami-ae90b6cb"
+                "64": "ami-8b92b4ee"
             },
             "us-west-1": {
-                "64": "ami-96f1dcf6"
+                "64": "ami-73f7da13"
             },
             "us-west-2": {
-                "64": "ami-7646530f"
+                "64": "ami-835b4efa"
             }
         }
     },
@@ -243,19 +248,22 @@
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "GroupDescription": "Enable Geth RPC Port",
-                "SecurityGroupIngress": [{
-                    "IpProtocol": "tcp",
-                    "FromPort": "8545",
-                    "ToPort": "8545",
-                    "CidrIp": "0.0.0.0/0"
-                }, {
-                    "IpProtocol": "tcp",
-                    "FromPort": "22",
-                    "ToPort": "22",
-                    "CidrIp": {
-                        "Ref": "SSHLocation"
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8545",
+                        "ToPort": "8545",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": {
+                            "Ref": "SSHLocation"
+                        }
                     }
-                }]
+                ]
             },
             "Metadata": {
                 "AWS::CloudFormation::Designer": {
@@ -269,11 +277,13 @@
                 "AvailabilityZones": {
                     "Fn::GetAZs": ""
                 },
-                "Listeners": [{
-                    "LoadBalancerPort": "80",
-                    "InstancePort": "8545",
-                    "Protocol": "HTTP"
-                }],
+                "Listeners": [
+                    {
+                        "LoadBalancerPort": "80",
+                        "InstancePort": "8545",
+                        "Protocol": "HTTP"
+                    }
+                ],
                 "HealthCheck": {
                     "Target": "TCP:8545",
                     "HealthyThreshold": "3",
@@ -300,9 +310,11 @@
                 "MaxSize": {
                     "Ref": "InstanceCount"
                 },
-                "LoadBalancerNames": [{
-                    "Ref": "LoadBalancer"
-                }],
+                "LoadBalancerNames": [
+                    {
+                        "Ref": "LoadBalancer"
+                    }
+                ],
                 "LaunchConfigurationName": {
                     "Ref": "LaunchConfiguration"
                 }
@@ -311,21 +323,21 @@
                 "AWS::CloudFormation::Designer": {
                     "id": "d509e6f2-dd24-460d-8532-e98791c13777"
                 }
-            },
-            "DependsOn": [
-                "EthstatsInstance"
-            ]
+            }
         },
         "LaunchConfiguration": {
             "Type": "AWS::AutoScaling::LaunchConfiguration",
             "Properties": {
                 "ImageId": {
                     "Fn::FindInMap": [
-                        "AWSRegionArch2AMI", {
+                        "AWSRegionArch2AMI",
+                        {
                             "Ref": "AWS::Region"
-                        }, {
+                        },
+                        {
                             "Fn::FindInMap": [
-                                "AWSInstanceType2Arch", {
+                                "AWSInstanceType2Arch",
+                                {
                                     "Ref": "InstanceType"
                                 },
                                 "Arch"
@@ -336,24 +348,46 @@
                 "InstanceType": {
                     "Ref": "InstanceType"
                 },
-                "BlockDeviceMappings": [{
-                    "DeviceName": "/dev/sda1",
-                    "Ebs": {
-                        "VolumeSize": "80"
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": "80"
+                        }
                     }
-                }],
+                ],
                 "KeyName": {
                     "Ref": "KeyName"
                 },
-                "SecurityGroups": [{
-                    "Ref": "ETHRPCSecurity"
-                }],
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": "ETHStatsServer"
-                }],
+                "SecurityGroups": [
+                    {
+                        "Ref": "ETHRPCSecurity"
+                    }
+                ],
                 "UserData": {
-                    "Fn::Base64": "#include https://get.docker.io"
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "apt install -y docker.io screen\n",
+                                "mkdir /ethereum\n",
+                                "docker pull myetherwallet/docker-geth-lb:geth-instance\n",
+                                "/usr/bin/screen -m -d -S docker docker run -e WS_SECRET='",
+                                {
+                                    "Ref": "ETHStatsPassword"
+                                },
+                                "' -e WS_SERVER='ws://",
+                                {
+                                    "Fn::GetAtt": [
+                                        "EthstatsInstance",
+                                        "PublicIp"
+                                    ]
+                                },
+                                ":3000' -e INSTANCE_NAME=\"mew-instance-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)\" -it -p 8545:8545 -p 30303:30303 -v /ethereum:/root/.ethereum myetherwallet/docker-geth-lb:geth-instance\n"
+                            ]
+                        ]
+                    }
                 }
             },
             "Metadata": {
@@ -367,11 +401,14 @@
             "Properties": {
                 "ImageId": {
                     "Fn::FindInMap": [
-                        "AWSRegionArch2AMI", {
+                        "AWSRegionArch2AMI",
+                        {
                             "Ref": "AWS::Region"
-                        }, {
+                        },
+                        {
                             "Fn::FindInMap": [
-                                "AWSInstanceType2Arch", {
+                                "AWSInstanceType2Arch",
+                                {
                                     "Ref": "InstanceType"
                                 },
                                 "Arch"
@@ -382,24 +419,44 @@
                 "InstanceType": {
                     "Ref": "ETHStatsServer"
                 },
-                "BlockDeviceMappings": [{
-                    "DeviceName": "/dev/sda1",
-                    "Ebs": {
-                        "VolumeSize": "15"
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": "15"
+                        }
                     }
-                }],
+                ],
                 "KeyName": {
                     "Ref": "KeyName"
                 },
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": "ETHStatsServer"
-                }],
-                "SecurityGroups": [{
-                    "Ref": "ETHStatsSecurity"
-                }],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ETHStatsServer"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "ETHStatsSecurity"
+                    }
+                ],
                 "UserData": {
-                    "Fn::Base64": "#include https://get.docker.io"
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "apt install -y docker.io screen\n",
+                                "docker pull myetherwallet/docker-geth-lb:ethstats-instance\n",
+                                "/usr/bin/screen -m -d -S docker docker run -it -e WS_SECRET='",
+                                {
+                                    "Ref": "ETHStatsPassword"
+                                },
+                                "' -p 3000:3000 myetherwallet/docker-geth-lb:ethstats-instance\n"
+                            ]
+                        ]
+                    }
                 }
             },
             "Metadata": {
@@ -412,19 +469,22 @@
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "GroupDescription": "Enable Geth RPC Port",
-                "SecurityGroupIngress": [{
-                    "IpProtocol": "tcp",
-                    "FromPort": "3000",
-                    "ToPort": "3000",
-                    "CidrIp": "0.0.0.0/0"
-                }, {
-                    "IpProtocol": "tcp",
-                    "FromPort": "22",
-                    "ToPort": "22",
-                    "CidrIp": {
-                        "Ref": "SSHLocation"
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3000",
+                        "ToPort": "3000",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": {
+                            "Ref": "SSHLocation"
+                        }
                     }
-                }]
+                ]
             },
             "Metadata": {
                 "AWS::CloudFormation::Designer": {
@@ -438,8 +498,10 @@
             "Description": "The URL of the node",
             "Value": {
                 "Fn::Join": [
-                    "", [
-                        "http://", {
+                    "",
+                    [
+                        "http://",
+                        {
                             "Fn::GetAtt": [
                                 "LoadBalancer",
                                 "DNSName"
@@ -453,13 +515,16 @@
             "Description": "IP address of the ethstats server",
             "Value": {
                 "Fn::Join": [
-                    "", [
-                        "http://", {
+                    "",
+                    [
+                        "http://",
+                        {
                             "Fn::GetAtt": [
                                 "EthstatsInstance",
                                 "PublicIp"
                             ]
-                        }
+                        },
+                        ":3000"
                     ]
                 ]
             }
@@ -473,8 +538,8 @@
                     "height": 60
                 },
                 "position": {
-                    "x": 150,
-                    "y": 300
+                    "x": 250,
+                    "y": 180
                 },
                 "z": 1,
                 "embeds": []
@@ -485,8 +550,8 @@
                     "height": 60
                 },
                 "position": {
-                    "x": -60,
-                    "y": 190
+                    "x": -80,
+                    "y": 180
                 },
                 "z": 0,
                 "embeds": []
@@ -515,8 +580,8 @@
                     "height": 60
                 },
                 "position": {
-                    "x": 50,
-                    "y": 190
+                    "x": 20,
+                    "y": 180
                 },
                 "z": 0,
                 "embeds": [],
@@ -525,9 +590,6 @@
                 ],
                 "isassociatedwith": [
                     "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
-                ],
-                "dependson": [
-                    "65efe09a-0f3e-48c2-a30a-84d0c993d132"
                 ]
             },
             "f67d95d9-f8db-4fda-8aa2-f8297eb6df19": {
@@ -545,8 +607,8 @@
                     "height": 60
                 },
                 "position": {
-                    "x": 50,
-                    "y": 300
+                    "x": 140,
+                    "y": 180
                 },
                 "z": 0,
                 "embeds": [],
@@ -554,7 +616,8 @@
                     "54b037ce-872c-458e-8876-ff95f9b58d1d"
                 ],
                 "isrelatedto": [
-                    "54b037ce-872c-458e-8876-ff95f9b58d1d"
+                    "54b037ce-872c-458e-8876-ff95f9b58d1d",
+                    "65efe09a-0f3e-48c2-a30a-84d0c993d132"
                 ]
             },
             "a86304ab-6581-43c2-b136-0fe39691ac2f": {
@@ -634,7 +697,7 @@
                     "height": 60
                 },
                 "position": {
-                    "x": 50,
+                    "x": 140,
                     "y": 50
                 },
                 "z": 0,
@@ -649,7 +712,7 @@
                     "height": 60
                 },
                 "position": {
-                    "x": 150,
+                    "x": 250,
                     "y": 50
                 },
                 "z": 0,
