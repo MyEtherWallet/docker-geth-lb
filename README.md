@@ -22,8 +22,8 @@ Prerequisites
 Deploying to AWS
 -------------------------
 
-- Be sure you've met all the prerequisites
-- Choose your node type
+- Be sure you've met all the prerequisites.
+- Choose your node type:
 	- Amazon CloudFormation uses JSON templates to deploy predefined infrastructure. We've created templates for both Geth and Parity. Depending on the type of node you'd like to run, save one of the following to your machine:
 	- Geth
 		- [geth-deployment.json](https://raw.githubusercontent.com/MyEtherWallet/docker-geth-lb/master/aws-cloudformation/geth-deployment.json)
