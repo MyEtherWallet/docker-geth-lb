@@ -12,6 +12,8 @@ Caution
 --------
 The following details steps to deploy live code to *real* infrastructure. **It will cost you real money.** Please take time to understand [Amazon's EC2 pricing](https://aws.amazon.com/ec2/pricing/) before deploying. Always continuously monitor your account to ensure any accrued fees match your expectations.
 
+As soon as you set up, you will want to set up [billing alerts](http://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/monitor_estimated_charges_with_cloudwatch.html) when certain thresholds are met. We did not do this initially and regretted it. Set up every ~$50 or so for total charges and/or EC2 charges. Adjust as necessary. We set it up to alert us on Slack as we meet certain thresholds and then email us directly when it gets out of hand. This ensures we stay aware, but don't get overloaded with notifications and take all emails seriously.  
+
 Prerequisites
 -----------------
 
