@@ -1,35 +1,29 @@
 #Get base image
-FROM ubuntu:16.04
+FROM alpine:3.6
 
 # Set environment variables.
 ENV HOME /root
 
-# Define working directory.
-WORKDIR /root
-
 #Run some commands
-RUN apt-get update && \
-	apt-get -y upgrade && \
-	apt-get install -y git build-essential curl python-software-properties && \
-	curl -O https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz && \
-	tar -C /usr/local -xzf go1.7.3.linux-amd64.tar.gz && \
-	mkdir -p ~/go; echo "export GOPATH=$HOME/go" >> ~/.bashrc && \
-	echo "export PATH=$PATH:$HOME/go/bin:/usr/local/go/bin" >> ~/.bashrc && \
-	. ~/.bashrc && \
-	git clone https://github.com/ethereum/go-ethereum && \
-	(cd go-ethereum && make geth) && \
-	cp go-ethereum/build/bin/geth /usr/local/bin/ && \
-	rm -rf /go-ethereum
+RUN apk add --update git go make gcc curl musl-dev linux-headers 		&& \
+  	git clone --depth=1 https://github.com/ethereum/go-ethereum.git 	&& \
+  	(cd go-ethereum && make geth)                           			&& \
+  	cp go-ethereum/build/bin/geth /usr/local/bin/           			&& \
+  	rm -rf /go-ethereum
 
-RUN apt-get update &&\
-    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-    apt-get update &&\
-    apt-get install -y nodejs
+RUN apk add --update nodejs nodejs-npm 	&& \
+	npm install npm@latest -g
 
-RUN git clone https://github.com/cubedro/eth-net-intelligence-api && \
-    cd eth-net-intelligence-api && \
-    npm install && \
+RUN cd /root/ && \
+	git clone --depth=1 https://github.com/cubedro/eth-net-intelligence-api.git && \
+    cd eth-net-intelligence-api 												&& \
+    npm install 																&& \
     npm install -g pm2
+
+#Delete installed packages
+RUN npm cache clean --force && \
+	apk del git go make gcc curl musl-dev linux-headers nodejs-npm  && \
+	rm -rf /var/cache/apk/*
 
 ADD files/app.json /root/eth-net-intelligence-api/app.json
 ADD files/startscript.sh /root/startscript.sh

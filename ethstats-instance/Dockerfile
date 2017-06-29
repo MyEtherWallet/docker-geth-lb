@@ -1,27 +1,24 @@
 #Get base image
-FROM ubuntu:16.04
+FROM alpine:3.6
 
 # Set environment variables.
 ENV HOME /root
 
-# Define working directory.
-WORKDIR /root
-
 #Run some commands
-RUN apt-get update && \
-	apt-get -y upgrade && \
-	apt-get install -y git build-essential curl python-software-properties
+RUN apk add --update git nodejs nodejs-npm 	&& \
+	npm install npm@latest -g
 
-RUN apt-get update &&\
-    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-    apt-get update &&\
-    apt-get install -y nodejs
-
-RUN git clone https://github.com/cubedro/eth-netstats.git && \
+RUN cd /root/ && \
+	git clone --depth=1  https://github.com/cubedro/eth-netstats.git && \
     cd eth-netstats && \
     npm install && \
     npm install -g grunt-cli && \
     grunt
+
+#Delete installed packages
+RUN npm cache clean --force && \
+	apk del git nodejs-npm  && \
+	rm -rf /var/cache/apk/*
 
 ADD files/startscript.sh /root/startscript.sh
 

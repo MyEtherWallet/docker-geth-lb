@@ -4,9 +4,6 @@ FROM ubuntu:16.04
 # Set environment variables.
 ENV HOME /root
 
-# Define working directory.
-WORKDIR /root
-
 #Run some commands
 RUN apt-get update && \
 	apt-get -y upgrade && \
@@ -27,6 +24,13 @@ RUN git clone https://github.com/cubedro/eth-net-intelligence-api && \
     cd eth-net-intelligence-api && \
     npm install && \
     npm install -g pm2
+
+#Delete installed packages
+RUN npm cache clean --force && \
+	~/.cargo/bin/rustup self uninstall -y && \
+	apt-get clean && \
+	apt-get remove -y git build-essential curl libssl-dev libudev-dev pkg-config npm && \
+	apt-get autoremove -y
 
 ADD files/app.json /root/eth-net-intelligence-api/app.json
 ADD files/startscript.sh /root/startscript.sh
