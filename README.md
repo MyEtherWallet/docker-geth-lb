@@ -6,7 +6,11 @@ Overview
 
 This project provides a means to quickly deploy public-facing Ethereum nodes using [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) technology. 
 
-Under the hood we're using Docker, your choice of Geth or Parity, and an instance of ethstats to display real-time information about your deployed nodes.
+Under the hood we're using [Docker](https://www.docker.com/), your choice of [Geth](https://github.com/ethereum/go-ethereum) or [Parity](https://github.com/paritytech/parity), and an instance of [ethstats](https://github.com/cubedro/eth-netstats) to display real-time information about your deployed nodes.
+
+Caution
+--------
+The following details steps to deploy live code to *real* infrastructure. **It will cost you real money.** Please take time to understand [Amazon's EC2 pricing](https://aws.amazon.com/ec2/pricing/) before deploying. Always continuously monitor your account to ensure any accrued fees match your expectations.
 
 Prerequisites
 -----------------
@@ -50,5 +54,15 @@ Deploying to AWS
 - Finally, take a moment to review your configuration. If everything looks good, click **Create** in the bottom right.
 - Amazon will now bring the template to life. Wait for the yellow **CREATE_IN_PROGRESS** status to switch to a green **CREATE_COMPLETE** before continuing. 
 - Next, click on your newly deployed stack and then click on **Outputs**. You should see two keys, described below:
-	- **ETHStatsIP** - The IP address of the ethstats server. Visit this  URL in your browser to view the status of your Ethereum nodes.
+	- **ETHStatsIP** - The public-facing IP address of the ethstats server. Visit this in your browser to view the status of your Ethereum nodes.
 	- **URL** - The public-facing URL used to connect to your Ethereum nodes.
+
+Congratulations! You've just deployed one or more public-facing Ethereum nodes!
+
+Undeploying from AWS
+-------------------------
+You can delete the infrastructure deployed in the previous step at any time:
+
+- Visit the [AWS console](https://console.aws.amazon.com) and log into your account.
+- Click on the **Services** button at the top to open a dropdown. Under **Management Tools**, click on **CloudFormation**.
+- Right-click on the name of the deployed stack you'd like to erase. Select **Delete Stack** and affirm at the prompt.
