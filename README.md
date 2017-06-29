@@ -15,7 +15,7 @@ The following details steps to deploy live code to *real* infrastructure. **It w
 Prerequisites
 -----------------
 
- - An active Amazon Web Services account ([quick setup guide and pricing](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-sign-up-for-aws.html)).
+ - An active Amazon Web Services account ([quick setup guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-sign-up-for-aws.html)).
 	 - For increased security, it is recommended by Amazon to create AWS Identity and Access Management user credentials for day-to-day interaction with AWS. Please see [this page](https://docs.aws.amazon.com/general/latest/gr/root-vs-iam.html) for a thorough explanation and instructions. Also, be sure to [turn on multi-factor authentication](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html) for any account you create.
  - A key pair registered to your AWS account ([guide here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair)).
 
