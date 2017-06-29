@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 cd /root/eth-netstats
 while true
 do
 if [ ! `pgrep node` ] ; then
-	npm start
+	node ./bin/www
 fi
 sleep 10
 done
