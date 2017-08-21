@@ -370,6 +370,7 @@
                             "",
                             [
                                 "#!/bin/bash -xe\n",
+                                "apt update -y\n",
                                 "apt install -y docker.io screen\n",
                                 "mkdir /ethereum\n",
                                 "docker pull myetherwallet/docker-geth-lb:geth-instance\n",
@@ -447,6 +448,7 @@
                             "",
                             [
                                 "#!/bin/bash -xe\n",
+                                "apt update -y\n",
                                 "apt install -y docker.io screen\n",
                                 "docker pull myetherwallet/docker-geth-lb:ethstats-instance\n",
                                 "/usr/bin/screen -m -d -S docker docker run -it -e WS_SECRET='",
