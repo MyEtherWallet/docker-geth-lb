@@ -33,5 +33,6 @@ RUN chmod +x /root/startscript.sh
 EXPOSE 8545
 EXPOSE 30303
 EXPOSE 30303/udp
+EXPOSE 3000
 
 ENTRYPOINT ["/root/startscript.sh"]
