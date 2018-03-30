@@ -1,11 +1,11 @@
 #Get base image
-FROM alpine:3.6
+FROM golang:1.10-alpine
 
 # Set environment variables.
 ENV HOME /root
 
 #Run some commands
-RUN apk add --update git go make gcc curl musl-dev linux-headers 		&& \
+RUN apk add --update git make gcc curl musl-dev linux-headers 		&& \
   	git clone --depth=1 https://github.com/ethereum/go-ethereum.git 	&& \
   	(cd go-ethereum && make geth)                           			&& \
   	cp go-ethereum/build/bin/geth /usr/local/bin/           			&& \

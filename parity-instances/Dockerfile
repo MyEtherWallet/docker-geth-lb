@@ -1,24 +1,21 @@
 #Get base image
-FROM ubuntu:16.04
+FROM alpine:edge
 
 # Set environment variables.
 ENV HOME /root
 
 #Run some commands
-RUN apt-get update && \
-	apt-get -y upgrade && \
-	apt-get install -y git build-essential curl libssl-dev libudev-dev pkg-config && \
-	curl https://sh.rustup.rs -sSf | sh /dev/stdin -y && \
-	git clone https://github.com/paritytech/parity && \
+RUN apk add --no-cache --update gcc musl-dev openssl-dev pkgconfig g++ make curl \
+	eudev-dev rust cargo git file binutils libusb-dev linux-headers
+	
+RUN git clone https://github.com/paritytech/parity && \
 	cd parity && \
-	~/.cargo/bin/cargo build --release && \
+	cargo build --release && \
 	cp ./target/release/parity /usr/local/bin/ && \
 	rm -rf ~/parity
 
-RUN apt-get update &&\
-    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-    apt-get update &&\
-    apt-get install -y nodejs
+RUN apk add --update nodejs nodejs-npm 	&& \
+	npm install npm@latest -g
 
 RUN git clone https://github.com/cubedro/eth-net-intelligence-api && \
     cd eth-net-intelligence-api && \
@@ -27,10 +24,9 @@ RUN git clone https://github.com/cubedro/eth-net-intelligence-api && \
 
 #Delete installed packages
 RUN npm cache clean --force && \
-	~/.cargo/bin/rustup self uninstall -y && \
-	apt-get clean && \
-	apt-get remove -y git build-essential curl libssl-dev libudev-dev pkg-config npm && \
-	apt-get autoremove -y
+	apk del gcc musl-dev openssl-dev pkgconfig g++ make curl \
+	eudev-dev rust cargo git file binutils libusb-dev linux-headers nodejs-npm  && \
+	rm -rf /var/cache/apk/*
 
 ADD files/app.json /root/eth-net-intelligence-api/app.json
 ADD files/startscript.sh /root/startscript.sh
