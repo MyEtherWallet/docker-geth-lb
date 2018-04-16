@@ -20,9 +20,10 @@ RUN apt-get update &&\
     apt-get update &&\
     apt-get install -y nodejs
 
-RUN git clone https://github.com/cubedro/eth-net-intelligence-api && \
-    cd eth-net-intelligence-api && \
-    npm install && \
+RUN cd /root/ && \
+	git clone --depth=1 https://github.com/cubedro/eth-net-intelligence-api.git && \
+    cd eth-net-intelligence-api 												&& \
+    npm install 																&& \
     npm install -g pm2
 
 #Delete installed packages
