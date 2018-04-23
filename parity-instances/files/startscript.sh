@@ -4,7 +4,7 @@ cd /root/eth-net-intelligence-api/
 while true
 do
 if [ ! `pgrep parity` ] ; then
-	parity --geth --cache=1024 --rpcaddr '0.0.0.0' --rpccorsdomain '*'
+	parity --geth --cache=4096 --rpcaddr '0.0.0.0' --rpccorsdomain '*'
 fi
 sleep 10
 done
