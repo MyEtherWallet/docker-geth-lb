@@ -4,7 +4,7 @@ cd /root/eth-net-intelligence-api/
 while true
 do
 if [ ! `pgrep parity` ] ; then
-	parity
+	parity --rpccorsdomain '*' --rpcaddr '0.0.0.0' --jsonrpc-hosts 'all'
 fi
 sleep 10
 done
