@@ -93,6 +93,60 @@
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x"
         }
     },
+    "Conditions": {
+        "IsNVME": {
+            "Fn::Or": [
+                {
+                    "Fn::Equals": [
+                        "i3.large",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.2xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.4xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.8xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.16xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
     "Mappings": {
         "AWSInstanceType2Arch": {
             "t1.micro": {
@@ -395,8 +449,26 @@
                             [
                                 "#!/bin/bash -xe\n",
                                 "apt update -y\n",
+                                "apt upgrade -y\n",
                                 "apt install -y docker.io screen\n",
                                 "mkdir /ethereum\n",
+                                {
+                                    "Fn::If": [
+                                        "IsNVME",
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "mkfs.ext4 -F /dev/nvme0n1\n",
+                                                    "mount /dev/nvme0n1 /ethereum\n",
+                                                    "chmod a+w /ethereum/\n",
+                                                    "echo UUID=`sudo blkid -s UUID -o value /dev/disk/by-id/nvme-Amazon*` /ethereum/ ext4 discard,defaults,nofail 0 2 | sudo tee -a /etc/fstab\n"
+                                                ]
+                                            ]
+                                        },
+                                        ""
+                                    ]
+                                },
                                 "docker pull myetherwallet/docker-geth-lb:parity-instance\n",
                                 "/usr/bin/screen -m -d -S docker docker run -e WS_SECRET='",
                                 {

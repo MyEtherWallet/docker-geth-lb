@@ -93,6 +93,60 @@
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x"
         }
     },
+    "Conditions": {
+        "IsNVME": {
+            "Fn::Or": [
+                {
+                    "Fn::Equals": [
+                        "i3.large",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.2xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.4xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.8xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "i3.16xlarge",
+                        {
+                            "Ref": "InstanceType"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
     "Mappings": {
         "AWSInstanceType2Arch": {
             "t1.micro": {
@@ -395,8 +449,26 @@
                             [
                                 "#!/bin/bash -xe\n",
                                 "apt update -y\n",
+                                "apt upgrade -y\n",
                                 "apt install -y docker.io screen\n",
                                 "mkdir /ethereum\n",
+                                {
+                                    "Fn::If": [
+                                        "IsNVME",
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "mkfs.ext4 -F /dev/nvme0n1\n",
+                                                    "mount /dev/nvme0n1 /ethereum\n",
+                                                    "chmod a+w /ethereum/\n",
+                                                    "echo UUID=`sudo blkid -s UUID -o value /dev/disk/by-id/nvme-Amazon*` /ethereum/ ext4 discard,defaults,nofail 0 2 | sudo tee -a /etc/fstab\n"
+                                                ]
+                                            ]
+                                        },
+                                        ""
+                                    ]
+                                },
                                 "docker pull myetherwallet/docker-geth-lb:geth-instance\n",
                                 "/usr/bin/screen -m -d -S docker docker run -e WS_SECRET='",
                                 {
@@ -582,24 +654,6 @@
                 "z": 0,
                 "embeds": []
             },
-            "61a1944b-eace-47f8-9013-5f5b033b5d22": {
-                "source": {
-                    "id": "4369026b-a90f-474b-8fcd-b636341ea415"
-                },
-                "target": {
-                    "id": "64341821-8e1c-40bb-a740-072885af036d"
-                },
-                "z": 11
-            },
-            "bcd0cabd-422c-441d-981c-a47e4cb1320e": {
-                "source": {
-                    "id": "4369026b-a90f-474b-8fcd-b636341ea415"
-                },
-                "target": {
-                    "id": "eba4a194-0d7c-433b-a0f3-633c3493e0ee"
-                },
-                "z": 2
-            },
             "d509e6f2-dd24-460d-8532-e98791c13777": {
                 "size": {
                     "width": 60,
@@ -611,21 +665,10 @@
                 },
                 "z": 0,
                 "embeds": [],
-                "isconnectedto": [
-                    "4369026b-a90f-474b-8fcd-b636341ea415"
-                ],
                 "isassociatedwith": [
-                    "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
+                    "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
+                    "4369026b-a90f-474b-8fcd-b636341ea415"
                 ]
-            },
-            "f67d95d9-f8db-4fda-8aa2-f8297eb6df19": {
-                "source": {
-                    "id": "d509e6f2-dd24-460d-8532-e98791c13777"
-                },
-                "target": {
-                    "id": "4369026b-a90f-474b-8fcd-b636341ea415"
-                },
-                "z": 2
             },
             "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7": {
                 "size": {
@@ -638,84 +681,9 @@
                 },
                 "z": 0,
                 "embeds": [],
-                "ismemberof": [
+                "isassociatedwith": [
                     "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                ],
-                "isrelatedto": [
-                    "54b037ce-872c-458e-8876-ff95f9b58d1d",
-                    "65efe09a-0f3e-48c2-a30a-84d0c993d132"
                 ]
-            },
-            "a86304ab-6581-43c2-b136-0fe39691ac2f": {
-                "source": {
-                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
-                },
-                "target": {
-                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                },
-                "z": 11
-            },
-            "419842f1-8718-4193-95a3-483a6213d851": {
-                "source": {
-                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
-                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
-                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
-                },
-                "target": {
-                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                },
-                "z": 12
-            },
-            "070987a8-4476-46f5-be19-3fd46e0f192d": {
-                "source": {
-                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
-                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
-                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
-                },
-                "target": {
-                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                },
-                "z": 12
-            },
-            "b9bb5ecc-90ff-47c4-a5d9-96e57b8258e8": {
-                "source": {
-                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
-                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
-                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
-                },
-                "target": {
-                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                },
-                "z": 12
-            },
-            "776ee65f-2dc5-454d-bff8-a951840cadbb": {
-                "source": {
-                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
-                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
-                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
-                },
-                "target": {
-                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                },
-                "z": 12
-            },
-            "03b12204-0f4e-4382-948e-cca534cbc34f": {
-                "source": {
-                    "id": "64341821-8e1c-40bb-a740-072885af036d"
-                },
-                "target": {
-                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                },
-                "z": 11
-            },
-            "8d10144b-45f8-4ad4-855d-199285a1c20a": {
-                "source": {
-                    "id": "d509e6f2-dd24-460d-8532-e98791c13777"
-                },
-                "target": {
-                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
-                },
-                "z": 11
             },
             "65efe09a-0f3e-48c2-a30a-84d0c993d132": {
                 "size": {
@@ -728,7 +696,7 @@
                 },
                 "z": 0,
                 "embeds": [],
-                "ismemberof": [
+                "isassociatedwith": [
                     "fe827154-fdc1-463d-9b70-44c556d2c5ee"
                 ]
             },
@@ -743,46 +711,6 @@
                 },
                 "z": 0,
                 "embeds": []
-            },
-            "74cce04d-af0b-4bbd-a163-97f814946dc4": {
-                "source": {
-                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
-                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
-                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
-                },
-                "target": {
-                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                },
-                "z": 12
-            },
-            "92ecadb6-800b-409d-a15c-fbef2dc6f08e": {
-                "source": {
-                    "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7",
-                    "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(2) circle:nth-child(1)     ",
-                    "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroups"
-                },
-                "target": {
-                    "id": "54b037ce-872c-458e-8876-ff95f9b58d1d"
-                },
-                "z": 12
-            },
-            "6197f869-42c0-4e45-9a0e-bc15957974ca": {
-                "source": {
-                    "id": "65efe09a-0f3e-48c2-a30a-84d0c993d132"
-                },
-                "target": {
-                    "id": "fe827154-fdc1-463d-9b70-44c556d2c5ee"
-                },
-                "z": 11
-            },
-            "eb72aedf-1eea-4818-bf49-304bdbe6dd7b": {
-                "source": {
-                    "id": "d509e6f2-dd24-460d-8532-e98791c13777"
-                },
-                "target": {
-                    "id": "65efe09a-0f3e-48c2-a30a-84d0c993d132"
-                },
-                "z": 11
             }
         }
     }
