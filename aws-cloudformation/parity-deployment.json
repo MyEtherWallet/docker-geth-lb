@@ -448,8 +448,8 @@
                             "",
                             [
                                 "#!/bin/bash -xe\n",
-                                "apt update -y\n",
-                                "apt upgrade -y\n",
+                                "apt -y update\n",
+                                "DEBIAN_FRONTEND=noninteractive apt-get -y upgrade\n",
                                 "apt install -y docker.io screen\n",
                                 "mkdir /ethereum\n",
                                 {
@@ -469,7 +469,7 @@
                                         ""
                                     ]
                                 },
-                                "docker pull myetherwallet/docker-geth-lb:parity-instance\n",
+                                "docker pull myetherwallet/docker-geth-lb:parity-prebuilt-instance\n",
                                 "/usr/bin/screen -m -d -S docker docker run -e WS_SECRET='",
                                 {
                                     "Ref": "ETHStatsPassword"

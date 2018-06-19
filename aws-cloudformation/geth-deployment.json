@@ -448,8 +448,8 @@
                             "",
                             [
                                 "#!/bin/bash -xe\n",
-                                "apt update -y\n",
-                                "apt upgrade -y\n",
+                                "apt -y update\n",
+                                "DEBIAN_FRONTEND=noninteractive apt-get -y upgrade\n",
                                 "apt install -y docker.io screen\n",
                                 "mkdir /ethereum\n",
                                 {
