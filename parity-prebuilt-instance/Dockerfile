@@ -1,5 +1,5 @@
 #Get base image
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 # Set environment variables.
 ENV HOME /root
@@ -8,10 +8,10 @@ ENV HOME /root
 RUN apt-get update && \
 	apt-get upgrade -y && \
     apt-get install -y \
-    curl \
-    bash \
-    wget \
-    git
+        curl \
+        git \
+        wget \
+        sudo
 	
 RUN wget https://raw.githubusercontent.com/paritytech/scripts/master/get-parity.sh && \
 	bash get-parity.sh -r stable
@@ -20,14 +20,11 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get update &&\
     apt-get install -y nodejs
 
-RUN git clone https://github.com/cubedro/eth-net-intelligence-api && \
-    cd eth-net-intelligence-api && \
-    npm install && \
+RUN cd /root/ && \
+	git clone --depth=1 https://github.com/cubedro/eth-net-intelligence-api.git && \
+    cd eth-net-intelligence-api 												&& \
+    npm install 																&& \
     npm install -g pm2
-
-#Delete installed packages
-RUN npm cache clean --force && \
-	apt-get -y remove curl wget git
 
 ADD files/app.json /root/eth-net-intelligence-api/app.json
 ADD files/startscript.sh /root/startscript.sh
