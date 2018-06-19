@@ -12,20 +12,10 @@
             "Type": "Number",
             "ConstraintDescription": "Integers only"
         },
-        "ETHStatsServer": {
-            "Description": "Ethstats server",
+        "ETHStatsIP": {
+            "Description": "The IP address of the EthStats server",
             "Type": "String",
-            "Default": "t2.micro",
-            "AllowedValues": [
-                "t1.micro",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "m1.small",
-                "m1.medium",
-                "m1.large"
-            ],
-            "ConstraintDescription": "Must be a valid EC2 instance type"
+            "ConstraintDescription": "Must be a valid IP x.x.x.x"
         },
         "ETHStatsPassword": {
             "Description": "Password to connect to ethstats server",
@@ -470,19 +460,16 @@
                                     ]
                                 },
                                 "export INSTANCEID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\n",
-                                "docker pull myetherwallet/docker-geth-lb:geth-instance\n",
+                                "docker pull myetherwallet/docker-geth-lb:parity-prebuilt-instance\n",
                                 "/usr/bin/screen -m -d -S docker docker run -e WS_SECRET='",
                                 {
                                     "Ref": "ETHStatsPassword"
                                 },
                                 "' -e WS_SERVER='ws://",
                                 {
-                                    "Fn::GetAtt": [
-                                        "EthstatsInstance",
-                                        "PublicIp"
-                                    ]
+                                    "Ref": "ETHStatsIP"
                                 },
-                                ":3000' -e INSTANCE_NAME=\"mew-geth-instance-$INSTANCEID\" -it -p 8545:8545 -p 30303:30303 -v /ethereum:/root/.ethereum --restart unless-stopped myetherwallet/docker-geth-lb:geth-instance \n"
+                                ":3000' -e INSTANCE_NAME=\"mew-parity-instance-$INSTANCEID\" -it -p 8545:8545 -p 30303:30303 -v /ethereum:/root/.local --restart unless-stopped myetherwallet/docker-geth-lb:parity-prebuilt-instance\n"
                             ]
                         ]
                     }
@@ -491,103 +478,6 @@
             "Metadata": {
                 "AWS::CloudFormation::Designer": {
                     "id": "61d5b9ec-16cf-48f4-8d7d-861cc7e781e7"
-                }
-            }
-        },
-        "EthstatsInstance": {
-            "Type": "AWS::EC2::Instance",
-            "Properties": {
-                "ImageId": {
-                    "Fn::FindInMap": [
-                        "AWSRegionArch2AMI",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        {
-                            "Fn::FindInMap": [
-                                "AWSInstanceType2Arch",
-                                {
-                                    "Ref": "InstanceType"
-                                },
-                                "Arch"
-                            ]
-                        }
-                    ]
-                },
-                "InstanceType": {
-                    "Ref": "ETHStatsServer"
-                },
-                "BlockDeviceMappings": [
-                    {
-                        "DeviceName": "/dev/sda1",
-                        "Ebs": {
-                            "VolumeSize": "15"
-                        }
-                    }
-                ],
-                "KeyName": {
-                    "Ref": "KeyName"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "ETHStatsServer"
-                    }
-                ],
-                "SecurityGroups": [
-                    {
-                        "Ref": "ETHStatsSecurity"
-                    }
-                ],
-                "UserData": {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "#!/bin/bash -xe\n",
-                                "apt update -y\n",
-                                "apt install -y docker.io screen\n",
-                                "docker pull myetherwallet/docker-geth-lb:ethstats-instance\n",
-                                "/usr/bin/screen -m -d -S docker docker run -it -e WS_SECRET='",
-                                {
-                                    "Ref": "ETHStatsPassword"
-                                },
-                                "' -p 3000:3000 myetherwallet/docker-geth-lb:ethstats-instance\n"
-                            ]
-                        ]
-                    }
-                }
-            },
-            "Metadata": {
-                "AWS::CloudFormation::Designer": {
-                    "id": "65efe09a-0f3e-48c2-a30a-84d0c993d132"
-                }
-            }
-        },
-        "ETHStatsSecurity": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Enable Geth RPC Port",
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "3000",
-                        "ToPort": "3000",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "CidrIp": {
-                            "Ref": "SSHLocation"
-                        }
-                    }
-                ]
-            },
-            "Metadata": {
-                "AWS::CloudFormation::Designer": {
-                    "id": "fe827154-fdc1-463d-9b70-44c556d2c5ee"
                 }
             }
         }
@@ -618,10 +508,7 @@
                     [
                         "http://",
                         {
-                            "Fn::GetAtt": [
-                                "EthstatsInstance",
-                                "PublicIp"
-                            ]
+                            "Ref": "ETHStatsIP"
                         },
                         ":3000"
                     ]
@@ -693,21 +580,6 @@
                 },
                 "position": {
                     "x": 140,
-                    "y": 50
-                },
-                "z": 0,
-                "embeds": [],
-                "isassociatedwith": [
-                    "fe827154-fdc1-463d-9b70-44c556d2c5ee"
-                ]
-            },
-            "fe827154-fdc1-463d-9b70-44c556d2c5ee": {
-                "size": {
-                    "width": 60,
-                    "height": 60
-                },
-                "position": {
-                    "x": 250,
                     "y": 50
                 },
                 "z": 0,
