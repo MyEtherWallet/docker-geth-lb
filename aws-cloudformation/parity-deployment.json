@@ -481,7 +481,7 @@
                                         "PublicIp"
                                     ]
                                 },
-                                ":3000' -e INSTANCE_NAME=\"mew-instance-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)\" -it -p 8545:8545 -p 30303:30303 -v /ethereum:/root/.local --restart unless-stopped myetherwallet/docker-geth-lb:parity-instance\n"
+                                ":3000' -e INSTANCE_NAME=\"mew-instance-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)\" -it -p 8545:8545 -p 30303:30303 -v /ethereum:/root/.local --restart unless-stopped myetherwallet/docker-geth-lb:parity-prebuilt-instance\n"
                             ]
                         ]
                     }

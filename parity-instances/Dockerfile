@@ -27,7 +27,7 @@ RUN cd /root/ && \
 #Delete installed packages
 RUN npm cache clean --force && \
 	apk del gcc musl-dev openssl-dev pkgconfig g++ make curl \
-	eudev-dev rust cargo git file binutils libusb-dev linux-headers nodejs-npm  && \
+	rust cargo git file binutils libusb-dev linux-headers nodejs-npm  && \
 	rm -rf /var/cache/apk/*
 
 ADD files/app.json /root/eth-net-intelligence-api/app.json
