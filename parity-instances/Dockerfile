@@ -10,6 +10,7 @@ RUN apk add --no-cache --update gcc musl-dev openssl-dev pkgconfig g++ make curl
 	
 RUN git clone https://github.com/paritytech/parity && \
 	cd parity && \
+	git checkout stable && \
 	cargo build --release && \
 	cp ./target/release/parity /usr/local/bin/ && \
 	rm -rf ~/parity
