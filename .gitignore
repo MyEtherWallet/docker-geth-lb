@@ -1,2 +1,4 @@
 geth-instances/temp_files
 parity-instances/temp_files
+parity-prebuilt-instance/temp_files
+snapshots-uploader/geth/temp_files
