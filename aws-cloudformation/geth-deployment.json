@@ -475,14 +475,14 @@
                                 {
                                     "Ref": "ETHStatsPassword"
                                 },
-                                "' -e WS_SERVER='ws://",
+                                "' -e WS_SERVER='",
                                 {
                                     "Fn::GetAtt": [
                                         "EthstatsInstance",
                                         "PublicIp"
                                     ]
                                 },
-                                ":3000' -e INSTANCE_NAME=\"mew-geth-instance-$INSTANCEID\" -it -p 8545:8545 -p 30303:30303 -v /ethereum:/root/.ethereum --restart unless-stopped myetherwallet/docker-geth-lb:geth-instance \n"
+                                "' -e INSTANCE_NAME=\"mew-geth-instance-$INSTANCEID\" -it -p 8545:8545 -p 30303:30303 -v /ethereum:/root/.ethereum --restart unless-stopped myetherwallet/docker-geth-lb:geth-instance \n"
                             ]
                         ]
                     }
