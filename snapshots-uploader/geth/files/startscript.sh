@@ -33,6 +33,7 @@ if [ -e "$backupStart" ] ; then
         $chainDir
     s3cmd --access_key $AWS_S3_ACCESS --secret_key $AWS_S3_SECRET sync $backupDir s3://$AWS_S3_BUCKET
 	rm $backupStart
+	rm "$backupDir/$clientName-$current_time.tar"
 	echo "Backup done $backupStart deleted."
 	startClient
 fi
