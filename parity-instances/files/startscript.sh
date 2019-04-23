@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 cd /root/eth-net-intelligence-api/
 /usr/bin/pm2 start app.json
 ALLOWED_HOSTS=`curl http://169.254.169.254/latest/meta-data/local-ipv4`:8546,ws.mewapi.io
