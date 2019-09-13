@@ -2,7 +2,7 @@
 cd /root/eth-net-intelligence-api/
 /usr/bin/pm2 start app.json
 ALLOWED_HOSTS=`curl http://169.254.169.254/latest/meta-data/local-ipv4`:8546,ws.mewapi.io
-ALLOWED_ORIGINS=https://localhost:8080,https://beta.myetherwallet.com,https://www.myetherwallet.com,https://*.mewbuilds.com
+ALLOWED_ORIGINS=https://localhost:8080,https://beta.myetherwallet.com,https://www.myetherwallet.com,https://*.mewbuilds.com,chrome-extension://*
 while true
 do
     if [ ! `pgrep parity` ] ; then
